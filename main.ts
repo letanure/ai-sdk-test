@@ -1,24 +1,47 @@
-import 'dotenv/config'
+import inquirer from 'inquirer'
+import fs from 'node:fs'
+import path from 'node:path'
+import { spawn } from 'node:child_process'
 
-import { openai } from '@ai-sdk/openai'
-import { generateText } from 'ai'
-
-// import { anthropic } from "@ai-sdk/anthropic";
-// const model = anthropic("claude-3-5-haiku-latest");
-
-const model = openai('o3-mini')
-
-export const answerMyQuestion = async (prompt: string) => {
-  const { text } = await generateText({
-    model,
-    prompt,
-  })
-
-  return text
+const EXAMPLES_DIR = path.resolve('src')
+type ExampleFile = {
+  label: string
+  filename: string
 }
 
-const answer = await answerMyQuestion(
-  'what is the chemical formula for dihydrogen monoxide? draw a diagram of the molecule using text art'
-)
+const files: ExampleFile[] = fs
+  .readdirSync(EXAMPLES_DIR)
+  .filter((f) => f.endsWith('.ts') && f !== 'main.ts')
+  .map((filename) => {
+    const content = fs.readFileSync(path.join(EXAMPLES_DIR, filename), 'utf-8')
+    const match = content.match(/\/\/\s*name:\s*(.+)/i)
+    const label = match?.[1]?.trim() || filename
+    return { label, filename }
+  })
 
-console.log(answer)
+const main = async () => {
+  const { choice } = await inquirer.prompt([
+    {
+      name: 'choice',
+      type: 'list',
+      message: 'Select an example to run:',
+      choices: files.map((f) => ({
+        name: f.label,
+        value: f.filename,
+      })),
+    },
+  ])
+
+  const filePath = path.join(EXAMPLES_DIR, choice)
+
+  const child = spawn('pnpm', ['exec', 'tsx', filePath], {
+    stdio: 'inherit',
+    shell: true,
+  })
+
+  child.on('exit', (code) => {
+    console.log(`\nScript exited with code ${code}`)
+  })
+}
+
+main()
