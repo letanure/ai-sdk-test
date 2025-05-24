@@ -32,10 +32,27 @@ const main = async () => {
           value: f.filename,
         })),
         new inquirer.Separator(),
+        { name: 'View Usage Dashboards', value: '__usage' },
         { name: 'Exit', value: '__exit' },
       ],
     },
   ])
+
+  if (choice === '__usage') {
+    const open = (url: string) => {
+      const start =
+        process.platform == 'darwin'
+          ? 'open'
+          : process.platform == 'win32'
+            ? 'start'
+            : 'xdg-open'
+      spawn(start, [url], { stdio: 'inherit', shell: true })
+    }
+
+    open('https://console.anthropic.com/settings/usage')
+    open('https://platform.openai.com/account/usage')
+    return
+  }
 
   if (choice === '__exit') {
     console.log('Goodbye!')
