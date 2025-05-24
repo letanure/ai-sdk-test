@@ -1,4 +1,4 @@
-import inquirer from 'inquirer'
+import { select, intro, outro } from '@clack/prompts'
 import fs from 'node:fs'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
@@ -21,29 +21,42 @@ const files: ExampleFile[] = fs
   })
 
 const main = async () => {
-  const { choice } = await inquirer.prompt([
-    {
-      name: 'choice',
-      type: 'list',
-      message: 'Select an example to run:',
-      choices: [
-        ...files.map((f) => ({
-          name: f.label,
-          value: f.filename,
-        })),
-        new inquirer.Separator(),
-        { name: 'View Usage Dashboards', value: '__usage' },
-        { name: 'Exit', value: '__exit' },
-      ],
-    },
-  ])
+  intro('ai-hero script runner')
+
+  const choice = await select({
+    message: 'Select an example to run',
+    options: [
+      ...files.map((f) => ({
+        label: f.label,
+        value: f.filename,
+      })),
+      {
+        label: '──────────────',
+        value: '__separator',
+        disabled: true,
+      },
+      {
+        label: '🔍 View Usage Dashboards',
+        value: '__usage',
+      },
+      {
+        label: '❌ Exit',
+        value: '__exit',
+      },
+    ],
+  })
+
+  if (choice === '__exit' || choice === null) {
+    outro('Goodbye!')
+    process.exit(0)
+  }
 
   if (choice === '__usage') {
     const open = (url: string) => {
       const start =
-        process.platform == 'darwin'
+        process.platform === 'darwin'
           ? 'open'
-          : process.platform == 'win32'
+          : process.platform === 'win32'
             ? 'start'
             : 'xdg-open'
       spawn(start, [url], { stdio: 'inherit', shell: true })
@@ -51,12 +64,8 @@ const main = async () => {
 
     open('https://console.anthropic.com/settings/usage')
     open('https://platform.openai.com/account/usage')
+    outro('Usage dashboards opened.')
     return
-  }
-
-  if (choice === '__exit') {
-    console.log('Goodbye!')
-    process.exit(0)
   }
 
   const filePath = path.join(EXAMPLES_DIR, choice)
@@ -67,7 +76,7 @@ const main = async () => {
   })
 
   child.on('exit', (code) => {
-    console.log(`\nScript exited with code ${code}`)
+    outro(`Script exited with code ${code}`)
   })
 }
 
