@@ -4,6 +4,7 @@ import path from 'node:path'
 import { spawn } from 'node:child_process'
 
 const EXAMPLES_DIR = path.resolve('src')
+
 type ExampleFile = {
   label: string
   filename: string
@@ -25,12 +26,21 @@ const main = async () => {
       name: 'choice',
       type: 'list',
       message: 'Select an example to run:',
-      choices: files.map((f) => ({
-        name: f.label,
-        value: f.filename,
-      })),
+      choices: [
+        ...files.map((f) => ({
+          name: f.label,
+          value: f.filename,
+        })),
+        new inquirer.Separator(),
+        { name: 'Exit', value: '__exit' },
+      ],
     },
   ])
+
+  if (choice === '__exit') {
+    console.log('Goodbye!')
+    process.exit(0)
+  }
 
   const filePath = path.join(EXAMPLES_DIR, choice)
 
