@@ -1,4 +1,3 @@
-// generateTextSystemPromptRole
 // name: Generate text - system prompt role
 
 import { readFileSync } from 'fs'
