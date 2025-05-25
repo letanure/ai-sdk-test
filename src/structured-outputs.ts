@@ -4,6 +4,8 @@ import 'dotenv/config'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 import { openai } from '@ai-sdk/openai'
+import readline from 'node:readline/promises'
+import { stdin as input, stdout as output } from 'node:process'
 
 const model = openai('gpt-4o-mini-2024-07-18')
 
@@ -37,6 +39,13 @@ export const createRecipe = async (prompt: string) => {
   return object.recipe
 }
 
-const recipe = await createRecipe('How to make baba ganoush?')
+// Ask for user input
+const rl = readline.createInterface({ input, output })
+const userPrompt = await rl.question(
+  '👩‍🍳 What recipe would you like to generate? '
+)
+rl.close()
+
+const recipe = await createRecipe(userPrompt)
 
 console.dir(recipe, { depth: null })
