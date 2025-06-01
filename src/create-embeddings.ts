@@ -1,4 +1,4 @@
-// name: Create embeddings with LM Studio
+// name: Create embeddings
 
 import 'dotenv/config'
 
