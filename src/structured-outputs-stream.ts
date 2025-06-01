@@ -1,7 +1,7 @@
 // name: Structured outputs stream
 
 import 'dotenv/config'
-import { generateObject, streamObject } from 'ai'
+import { streamObject } from 'ai'
 import { z } from 'zod'
 import { openai } from '@ai-sdk/openai'
 import readline from 'node:readline/promises'
